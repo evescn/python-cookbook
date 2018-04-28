@@ -1,0 +1,112 @@
+从任意长度的可迭代对象中分解元素
+
+问题：
+需要从某个可迭代对象中分解出N个元素，但是这个可迭代对象的长度可能超过N，这会导致出现”分解的值过多（too many values to unpack）“的异常
+
+解决方案：
+python的”*表达式“可以用来解决这个问题。例如，假设开设了一门课程，并决定在期末的作业成绩中去掉第一个和最后一个，只对中间剩下的成绩做平均分统计，如果只有4个成绩，也许可以简单地将4个都分解出来，但是如果有24个呢？*表达式使这一切都变得简单
+
+def drop_first_last(grades):
+	first, *middle, last = grades
+	return avg(middle)
+	
+另一个用例是假设有一些用户记录，记录由姓名和电子邮件地址组成，后面跟着任意数据的电话号码，则可以像这样分解记录：
+
+>>> record = ('Dave', 'dave@example.com', '773-555-1212', '847-555-1212')
+>>> name, email, *phone_numbers = record
+>>> name
+'Dave'
+>>> email
+'dave@example.com'
+>>> phone_numbers
+['773-555-1212', '847-555-1212']
+>>>
+
+不管需要分解出多少个号码（甚至没有电话号码），变量 phone_numbers 都一直是列表，而这不是毫无意义的，如此一来，任何需要用的变量 phone_numbers 的代码都不必对它可能不是一个列表的情况复制，或者额外做任何形式的类型检查
+
+由*修饰的变量也可以位于列表的第一个位置。例如，比方说用一系列的值来代表公司过去8个季度的销售额，如果想对最近一个季度的销售额同前7个季度的平均值做比较，可以这么做：
+
+>>> sales_record = [10, 8, 7, 1, 9, 5, 10, 3]
+>>> *trailing_qtrs, current_qtrs = sales_record
+trailing_avg = sum(trailing_qtrs) / len(trailing_qtrs)
+return avg_comparison(trailing_avg, current_qtrs)
+
+从Python解释器的角度来看，这个操作是这样的：
+
+>>> sales_record = [10, 8, 7, 1, 9, 5, 10, 3]
+>>> *trailing, current = sales_record
+>>> trailing
+[10, 8, 7, 1, 9, 5, 10]
+>>> current
+3
+
+讨论：
+对于分解未知或任意长度的可迭代对象，这种扩展的分解操作可谓是量身定做的工具，利用*表达式分解可迭代对象使的开发折能够轻松利用这些模式，而不必在可迭代对象中做负责花哨的操作才能得到相关的元素
+*式的语法在迭代一个变长的元组序列时尤其有用。例如，假设有一个带有标记的元组序列：
+
+records =[
+	('foo', 1, 2),
+	('bar', 'hello'),
+	('foo', 3, 4),
+]
+
+def do_foo(x, y):
+	print('foo', x, y)
+	
+def do_bar(s):
+	print('bar', s)	
+	
+for tag, *args in records:
+	if tag == 'foo':
+		do_foo(*args)
+	elif tag == 'bar':
+		do_bar(*args)
+	
+输出：
+foo 1 2
+bar hello
+foo 3 4
+
+当和某些特定的字符串处理操作相结合，比如做拆分（splitting）操作时，这种*式的语法所支持的分解操作也非常有用。例如：
+
+>>> line = 'evescn:x:1000:1000:CentOS7:/home/evescn:/bin/bash'
+>>> uname, *fields, homedir, sh = line.split(':')
+>>> uname
+'evescn'
+>>> homedir
+'/home/evescn'
+>>> sh
+'/bin/bash'
+>>> 	
+
+有时候可能想分解出某些值然后丢弃它们。在分解的时候，不能只是指定一个单独的*，但是可以使用几个常用来表示待丢弃值的变量名，比如_或者ign（ignored）。例如：
+
+>>> record = ('ACME', 50, 123.45, (12, 18, 2012))
+>>> name, *_, (*_, year) = record
+>>> name
+'ACME'
+>>> year
+2012
+>>> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
