@@ -1,0 +1,62 @@
+找到最大或最小的N个元素
+
+问题：
+想在某个集合中找到最大或最小的N个元素
+
+解决方案：
+heapq模块中有两个函数   nlargest()和nsmallest() 它们正是我们需要的。例如：
+
+import heapq
+
+nums = [1, 8, 2, 23, 7, -4, 18, 23, 42, 37, 2]
+print(heapq.nlargest(3, nums))
+print(heapq.nsmallest(3, nums))
+
+### 输出结果
+[42, 37, 23]
+[-4, 1, 2]
+
+这两个函数都可以接受一个参数key，从而允许它们工作在更加复杂的数据结构之上。例如：
+
+portfolio = [
+    {'name': 'IBM', 'shares': 100, 'price': 91.1},
+    {'name': 'AAPL', 'shares': 50, 'price': 543.22},
+    {'name': 'FB', 'shares': 200, 'price': 21.09},
+    {'name': 'HPQ', 'shares': 35, 'price': 31.75},
+    {'name': 'YHOO', 'shares': 45, 'price': 16.35},
+    {'name': 'ACME', 'shares': 75, 'price': 115.65},
+]
+
+cheap = heapq.nlargest(3, portfolio, key=lambda s: s['price'])
+expensive = heapq.nsmallest(3, portfolio, key=lambda s: s['price'])
+
+print(cheap)
+print(expensive)
+
+### 输出结果
+[{'name': 'AAPL', 'price': 543.22, 'shares': 50}, {'name': 'ACME', 'price': 115.65, 'shares': 75}, {'name': 'IBM', 'price': 91.1, 'shares': 100}]
+[{'name': 'YHOO', 'price': 16.35, 'shares': 45}, {'name': 'FB', 'price': 21.09, 'shares': 200}, {'name': 'HPQ', 'price': 31.75, 'shares': 35}]
+
+讨论：
+如果正在寻找最大或最小的N个元素，且同集合中元素的总数目相比，N很小，那么下面的这些函数可以提供更好的性能。这些函数首先会在底层将数据转化为列表，且元素会以堆的顺序排列。例如：
+
+>>> nums = [1, 8, 2, 23, 7, -4, 18, 23, 42, 37, 2]
+>>> import heapq
+>>> heap = list (nums)
+>>> heap
+[1, 8, 2, 23, 7, -4, 18, 23, 42, 37, 2]
+>>> heapq.heapify(heap)
+>>> heap
+[-4, 2, 1, 23, 7, 2, 18, 23, 42, 37, 8]
+>>> 
+
+堆最重要的特性就是 heap[0] 总是最小的那个元素。除此，接下来的元素可依次通过 heapq.heappop() 方式轻松找到。该方法会将第一个元素（最小的）弹出，然后以第二小的元素取而代之（时间复杂度O(logN)，N表示堆的大小）。例如，要找到第3个小的元素：
+
+>>> heapq.heappop(heap)
+-4
+>>> heapq.heappop(heap)
+1
+>>> heapq.heappop(heap)
+2
+
+当所找的元素数量相对较小时，函数 nlargest() 和 nsmallest() 才是最适用的。如果只是简单的想找最小或最大的元素（N=1时），那么用 min() 和 max() 会更快，同样，如果N和集合本身的大小差不多大，通常更快的方法是先对集合排序，然后做切片操作。例如：sorted(items)[:N] 或者 sorted(items)[-N:]
